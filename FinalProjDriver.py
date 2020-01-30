@@ -76,8 +76,11 @@ while(1):
     #lowerRed = np.array([90, 100, 100])
     #upperRed = np.array([100, 255, 255])
 
-    lowerRed = np.array([170, 120, 120])
-    upperRed = np.array([180, 255, 255])
+    lowerRed = np.array([80, 250, 100])
+    upperRed = np.array([100, 250, 255])
+
+    #lowerRed = np.array([145, 100, 100])
+    #upperRed = np.array([175, 255, 255])
 
     mask = cv2.inRange(hsv, lowerRed, upperRed)
 
@@ -242,24 +245,47 @@ while(1):
                 print('neutral: ' + str(neutralMood))
                 print('angry: ' + str(angryMood))
 
-
-
                 upperDance = dance + 0.002
                 lowerDance = dance - 0.002  
 
-                data_path = Path('.') / 'Data'
-                data_files = list(data_path.glob("*.xlsx"))
+                #data_path = Path('.') / 'Data'
+                #data_files = list(data_path.glob("*.xlsx"))
 
-                file = data_files[0]
-                df = pd.read_excel(str(file))
+                #data_pathMood = Path('.') / 'SecondData'
+                #data_filesMood = list(data_pathMood.glob("*.xlsx"))
+
+                df = pd.read_excel('cleanedMusicData.xlsx', 'Sheet1')
+                dfMood = pd.read_excel('HPI-Countries.xlsx', 'Sheet1')
+
+                #fileMood = data_filesMood[0]
+                #dfMood = pd.read_excel(str(fileMood))
+
+                #file = data_files[0]
+                #df = pd.read_excel(str(file))
 
                 df_dance = df[(df.danceability >= lowerDance) & (df.danceability <= upperDance)]
-                
+
+                moodVals = [sadMood, neutralMood, angryMood]
+
+                sortedMood = sorted(moodVals)
+
+                if(sortedMood[2] == sadMood):
+                    HPI_r = dfMood[(dfMood.HPI_Rank > 50) & (dfMood.HPI_Rank < 70)]
+                elif(sortedMood[2] == neutralMood):
+                    HPI_r = dfMood[(dfMood.HPI_Rank > 0) & (dfMood.HPI_Rank < 50)]
+                elif(sortedMood[2] == angryMood):
+                    HPI_r = dfMood[(dfMood.HPI_Rank > 70)]
+
+                finalMoodCOuntry = HPI_r[0:1]
+                print("You should live here: ")
+                print(finalMoodCOuntry['Country'])
+
+
                 finalSong_df = df_dance[0:10]
 
-                print('Here are 5 songs that represent your drawing: ')
+                print('Here are 10 songs that represent your drawing: ')
 
-                for i in range(0, 5):
+                for i in range(0, 10):
                    
                     dateValues = finalSong_df[i:i+1]
                     songTitle = dateValues['title']
@@ -267,7 +293,6 @@ while(1):
                     print('Song: ' + songTitle.astype(str) + " by " + artist.astype(str))
                     
                
-
                 plt.axis("off")
                 plt.imshow(bar)
                 #plt.imshow(bar2)
